@@ -8,9 +8,9 @@ import TicketDetailPage from './pages/TicketDetailPage';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <main className="container mx-auto px-4 py-8">
+        <main>
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/states/:state" element={<StateTicketsPage />} />
