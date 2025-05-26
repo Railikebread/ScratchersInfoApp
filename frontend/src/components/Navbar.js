@@ -5,7 +5,7 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-blue-600 shadow-lg">
+    <nav className="bg-blue-600 dark:bg-gray-800 shadow-lg transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -18,14 +18,14 @@ function Navbar() {
           <div className="flex items-center">
             <Link
               to="/"
-              className="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-white hover:bg-blue-700 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Home
             </Link>
             <div className="relative">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium focus:outline-none"
+                className="text-white hover:bg-blue-700 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition-colors"
               >
                 <svg
                   className="h-6 w-6"
@@ -40,11 +40,11 @@ function Navbar() {
                 </svg>
               </button>
               {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5">
                   <div className="py-1">
                     <Link
                       to="/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Settings

@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
 
 // State abbreviations and names mapping
 const statesList = [
@@ -56,16 +55,17 @@ const statesList = [
   { code: 'WY', name: 'Wyoming' }
 ];
 
+// State flags from public CDN
+const stateFlags = {
+  NY: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_New_York.svg/120px-Flag_of_New_York.svg.png'
+};
+
 // Memoized component to prevent unnecessary re-renders
 const StateCard = React.memo(({ state, isAvailable, onSelect }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Preload placeholder image
-  const placeholderUrl = useMemo(() => 
-    `https://via.placeholder.com/150/e2e8f0/64748b?text=${state.code}`, 
-    [state.code]
-  );
+  const flagUrl = stateFlags[state.code];
 
   return (
     <button
@@ -73,36 +73,38 @@ const StateCard = React.memo(({ state, isAvailable, onSelect }) => {
       disabled={!isAvailable}
       className={`relative overflow-hidden rounded-lg shadow-md transition-all duration-300 ${
         isAvailable
-          ? 'hover:shadow-xl transform hover:scale-105 cursor-pointer'
-          : 'opacity-40 cursor-default'
+          ? 'hover:shadow-xl transform hover:scale-105 cursor-pointer bg-white dark:bg-gray-800 border-2 border-blue-500'
+          : 'opacity-40 cursor-default bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700'
       }`}
     >
       <div className="aspect-w-1 aspect-h-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-          {(!imageLoaded || imageError) && (
-            <span className="text-2xl font-bold text-gray-400">{state.code}</span>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+          {flagUrl && !imageError ? (
+            <img
+              src={flagUrl}
+              alt={`${state.name} flag`}
+              className={`absolute inset-0 object-contain w-full h-full p-4 transition-opacity duration-500 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <span className="text-3xl font-bold text-gray-400 dark:text-gray-600">{state.code}</span>
+          )}
+          {(!imageLoaded || imageError) && !flagUrl && (
+            <span className="text-3xl font-bold text-gray-400 dark:text-gray-600">{state.code}</span>
           )}
         </div>
-        {!imageError && (
-          <img
-            src={`https://raw.githubusercontent.com/Railikebread/ScratchersInfoApp/main/frontend/public/state-images/${state.code.toLowerCase()}.png`}
-            alt={state.name}
-            className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        )}
       </div>
-      <div className="p-3 bg-white border-t border-gray-200">
-        <h2 className="text-sm font-semibold text-center text-gray-800">{state.name}</h2>
+      <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <h2 className="text-sm font-semibold text-center text-gray-800 dark:text-gray-200">{state.name}</h2>
         <p className="text-xs text-center mt-1">
           {isAvailable ? (
-            <span className="text-blue-600 font-medium">View tickets</span>
+            <span className="text-blue-600 dark:text-blue-400 font-medium">View tickets</span>
           ) : (
-            <span className="text-gray-400">Coming soon</span>
+            <span className="text-gray-400 dark:text-gray-500">Coming soon</span>
           )}
         </p>
       </div>
@@ -113,12 +115,24 @@ const StateCard = React.memo(({ state, isAvailable, onSelect }) => {
 StateCard.displayName = 'StateCard';
 
 function LandingPage() {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Only NYC is available for now
   const isStateAvailable = useMemo(() => (stateCode) => {
     return stateCode === 'NY';
+  }, []);
+
+  // Sort states: available first, then alphabetically
+  const sortedStates = useMemo(() => {
+    return [...statesList].sort((a, b) => {
+      const aAvailable = isStateAvailable(a.code);
+      const bAvailable = isStateAvailable(b.code);
+      
+      if (aAvailable && !bAvailable) return -1;
+      if (!aAvailable && bAvailable) return 1;
+      
+      return a.name.localeCompare(b.name);
+    });
   }, []);
 
   const handleStateSelect = (stateCode) => {
@@ -128,22 +142,22 @@ function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-gray-900 tracking-tight">
+          <h1 className="text-5xl font-bold mb-4 text-gray-900 dark:text-white tracking-tight">
             Welcome to Scratchers Info
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Select a state to view available scratch-off tickets and their odds
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             Currently available: New York
           </p>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {statesList.map((state) => (
+          {sortedStates.map((state) => (
             <StateCard
               key={state.code}
               state={state}
