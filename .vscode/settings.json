@@ -1,3 +1,5 @@
 {
     "java.compile.nullAnalysis.mode": "automatic"
 }
+
+// This is just for me, to make our lives easier to catch null errors etc.

@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import TicketImage from '../components/TicketImage';
 
 function TicketDetailPage() {
-  const { state, id } = useParams();
+  const { state, ticketId } = useParams();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchTicketDetail = async () => {
@@ -16,10 +15,10 @@ function TicketDetailPage() {
         // For NY, we need to fetch all tickets and find the specific one
         if (state.toUpperCase() === 'NY') {
           const allTickets = await api.getTicketsByState(state.toUpperCase());
-          const foundTicket = allTickets.find(t => t.gameNumber === id);
+          const foundTicket = allTickets.find(t => t.gameNumber === ticketId);
           setTicket(foundTicket);
         } else {
-          const data = await api.getTicketById(state, id);
+          const data = await api.getTicketById(state, ticketId);
           setTicket(data);
         }
       } catch (error) {
@@ -30,7 +29,7 @@ function TicketDetailPage() {
     };
 
     fetchTicketDetail();
-  }, [state, id]);
+  }, [state, ticketId]);
 
   if (loading) {
     return (
@@ -81,48 +80,26 @@ function TicketDetailPage() {
             {/* Ticket Image */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
               <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden relative h-96">
-                {ticket.imageUrl && !imageError ? (
-                  <>
-                    {!imageLoaded && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="animate-pulse bg-gray-300 dark:bg-gray-600 rounded w-48 h-48"></div>
-                      </div>
-                    )}
-                    <img
-                      src={ticket.imageUrl}
-                      alt={ticket.gameName}
-                      className={`w-full h-full object-contain p-8 transition-opacity duration-300 ${
-                        imageLoaded ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      onLoad={() => setImageLoaded(true)}
-                      onError={() => setImageError(true)}
-                    />
-                  </>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <svg className="w-24 h-24 mx-auto text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <p className="mt-2 text-gray-500 dark:text-gray-400">Ticket Image</p>
-                    </div>
-                  </div>
-                )}
+                <TicketImage
+                  ticket={ticket}
+                  className="w-full h-full p-8"
+                  alt={`${ticket.gameName} - Game #${ticket.gameNumber}`}
+                />
               </div>
               
               {/* PDF Link */}
               {ticket.pdfUrl && (
-                <div className="mt-4">
-                  <a
-                    href={ticket.pdfUrl}
-                    target="_blank"
+                <div className="mt-4 text-center">
+                  <a 
+                    href={ticket.pdfUrl} 
+                    target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow hover:shadow-md"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    View Game Details (PDF)
+                    Download PDF
                   </a>
                 </div>
               )}
